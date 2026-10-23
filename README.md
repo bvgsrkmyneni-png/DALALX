@@ -1,106 +1,43 @@
-# DALALX — Virtual Stock Trading Platform
+﻿# DALALX — Virtual Stock Trading Platform
 
-DALALX is a full-stack virtual stock trading web application designed to help users understand stock market trading through a simulated environment without investing real money.
+DALALX is an educational stock trading simulator using virtual money. No real-money transactions are executed.
 
 ## Features
 
-- User Registration and Login
-- Interactive Dashboard
-- Market Watch with Stock Prices
-- Virtual Stock Buying and Selling
-- Portfolio and Holdings Management
-- Order and Transaction History
-- Virtual Funds Management
-- Interactive Stock Charts
-- Light and Dark Theme
+- User registration and login
+- User and admin roles
+- Trading dashboard
+- Market Watch
+- Virtual stock buying and selling
+- Portfolio and holdings tracking
+- Profit and loss based on purchase price
+- Transaction history
+- Admin dashboard and stock management
+- Light and dark themes
 
 ## Technology Stack
 
-| Component | Technology |
-|---|---|
-| Frontend | React.js, Vite, CSS |
-| Backend | Node.js, Express.js |
-| Database | PostgreSQL |
-| API Communication | Axios |
-| Version Control | Git and GitHub |
+- Frontend: React, Vite, CSS
+- Backend: Node.js, Express
+- Database: PostgreSQL
 
-## Project Structure
+## Installation
 
-```text
-DALALX/
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── routes/
-│   ├── services/
-│   ├── package.json
-│   └── server.js
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-├── .gitignore
-└── README.md
-```
+Clone the repository:
 
-## Getting Started
+    git clone https://github.com/bvgsrkmyneni-png/DALALX.git
+    cd DALALX
 
-### 1. Clone the Repository
+Install dependencies in the backend and frontend directories using npm install.
 
-```bash
-git clone https://github.com/bvgsrkmyneni-png/DALALX.git
-cd DALALX
-```
+Configure the backend database connection and required environment variables before starting the application.
 
-### 2. Backend Setup
-
-```bash
-cd backend
-npm install
-```
-
-Create a `.env` file inside `backend` and configure the PostgreSQL database connection:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-```
-
-Start the backend:
-
-```bash
-node server.js
-```
-
-### 3. Frontend Setup
-
-Open another terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open the local URL displayed by Vite in your browser.
-
-## Project Team
-
-**M.Bvgs Krishna** — Developer
-
-**Udumula Avinash** — Developer
+Run the frontend using npm run dev from the frontend directory.
 
 ## Disclaimer
 
-DALALX is an educational virtual trading platform. It does not execute real-money stock market transactions.
+DALALX is for educational and demonstration purposes only.
 
-## Repository
+## GitHub Repository
 
 https://github.com/bvgsrkmyneni-png/DALALX
