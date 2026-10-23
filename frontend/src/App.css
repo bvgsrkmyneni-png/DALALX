@@ -1,4 +1,4 @@
-* {
+﻿* {
   box-sizing: border-box;
 }
 
@@ -2673,4 +2673,377 @@ input {
     background-color 0.2s ease,
     color 0.2s ease,
     border-color 0.2s ease;
+}
+
+
+/* DALALX TARGETED DASHBOARD THEME FIX */
+
+/* Dark dashboard headings */
+.broker-app.dark-theme .dashboard-heading,
+.broker-app.dark-theme .dashboard-heading h1,
+.broker-app.dark-theme .dashboard-heading h2,
+.broker-app.dark-theme .page-title h1 {
+  color: #f5f7ff !important;
+}
+
+.broker-app.dark-theme .dashboard-heading p,
+.broker-app.dark-theme .page-title p {
+  color: #a9b9d5 !important;
+}
+
+/* Dashboard market watch */
+.broker-app.dark-theme .market-header-row,
+.broker-app.dark-theme .market-table-header {
+  background: #202b40 !important;
+  color: #aebed8 !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
+
+.broker-app.dark-theme .market-header-row *,
+.broker-app.dark-theme .market-table-header * {
+  color: #aebed8 !important;
+}
+
+.broker-app.dark-theme .market-row,
+.broker-app.dark-theme .market-table-row {
+  background: #182338 !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
+
+.broker-app.dark-theme .market-row:hover,
+.broker-app.dark-theme .market-table-row:hover {
+  background: #22324c !important;
+}
+
+.broker-app.dark-theme .market-company strong,
+.broker-app.dark-theme .market-price,
+.broker-app.dark-theme .chart-stock-name,
+.broker-app.dark-theme .chart-current strong {
+  color: #f3f6ff !important;
+}
+
+.broker-app.dark-theme .market-company span,
+.broker-app.dark-theme .chart-stock-company,
+.broker-app.dark-theme .chart-bottom {
+  color: #a9b9d5 !important;
+}
+
+/* Chart container */
+.broker-app.dark-theme .chart-box,
+.broker-app.dark-theme .chart-top,
+.broker-app.dark-theme .chart-area {
+  background: #182338 !important;
+  color: #f3f6ff !important;
+}
+
+.broker-app.dark-theme .chart-current span {
+  color: #a9b9d5 !important;
+}
+
+/* Chart grid and labels */
+.broker-app.dark-theme .chart-grid {
+  stroke: rgba(169,185,213,.18) !important;
+}
+
+.broker-app.dark-theme .chart-area svg text {
+  fill: #a9b9d5 !important;
+}
+
+/* Dashboard panels */
+.broker-app.dark-theme .dashboard-grid .panel,
+.broker-app.dark-theme .dashboard-grid .stat-card {
+  background: #182338;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* Avoid low-contrast text */
+.broker-app.dark-theme .dashboard-grid h2,
+.broker-app.dark-theme .dashboard-grid h3 {
+  color: #f3f6ff !important;
+}
+
+/* Preserve green/red stock movement */
+.broker-app.dark-theme .chart-positive {
+  color: #38d9a9 !important;
+}
+
+.broker-app.dark-theme .chart-negative {
+  color: #ff718b !important;
+}
+
+
+/* DALALX MULTI-PAGE DARK CONTRAST FIX */
+
+/* Consistent text throughout dark-mode content */
+.broker-app.dark-theme .broker-main {
+  color: #edf3ff;
+}
+
+.broker-app.dark-theme .broker-main h1,
+.broker-app.dark-theme .broker-main h2,
+.broker-app.dark-theme .broker-main h3,
+.broker-app.dark-theme .broker-main h4 {
+  color: #f4f7ff;
+}
+
+/* Recent orders */
+.broker-app.dark-theme .recent-orders,
+.broker-app.dark-theme .recent-orders strong,
+.broker-app.dark-theme .recent-orders td,
+.broker-app.dark-theme .recent-orders .order-symbol,
+.broker-app.dark-theme .recent-orders .order-amount {
+  color: #f4f7ff !important;
+}
+
+.broker-app.dark-theme .recent-orders small,
+.broker-app.dark-theme .recent-orders p {
+  color: #aebed8 !important;
+}
+
+/* Trading stock cards */
+.broker-app.dark-theme .trade-card,
+.broker-app.dark-theme .trade-card strong,
+.broker-app.dark-theme .trade-card .stock-price,
+.broker-app.dark-theme .trade-card .trade-price,
+.broker-app.dark-theme .trade-card .current-price {
+  color: #f4f7ff !important;
+}
+
+.broker-app.dark-theme .trade-card small,
+.broker-app.dark-theme .trade-card p {
+  color: #aebed8;
+}
+
+/* Market Watch rows */
+.broker-app.dark-theme .market-table-row,
+.broker-app.dark-theme .market-table-row td,
+.broker-app.dark-theme .market-table-row .market-price,
+.broker-app.dark-theme .market-table-row .stock-price {
+  color: #f4f7ff !important;
+}
+
+.broker-app.dark-theme .market-table-row small,
+.broker-app.dark-theme .market-table-row .market-company span {
+  color: #aebed8 !important;
+}
+
+/* Search fields */
+.broker-app.dark-theme input[type="search"] {
+  background: #1d2a40 !important;
+  color: #f4f7ff !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+
+.broker-app.dark-theme input[type="search"]::placeholder {
+  color: #93a6c7 !important;
+}
+
+/* Dark-mode table consistency */
+.broker-app.dark-theme .market-table-header {
+  background: #202b40 !important;
+  color: #b8c8e5 !important;
+}
+
+.broker-app.dark-theme .market-table-row {
+  background: #182338 !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
+
+/* Avoid changing buy/sell status colors */
+.broker-app.dark-theme .market-change.positive,
+.broker-app.dark-theme .chart-positive {
+  color: #35d6a3 !important;
+}
+
+.broker-app.dark-theme .market-change.negative,
+.broker-app.dark-theme .chart-negative {
+  color: #ff718b !important;
+}
+
+
+/* DALALX RECENT ORDERS READABILITY FIX */
+
+.broker-app.dark-theme .orders-list {
+  background: #182338;
+}
+
+.broker-app.dark-theme .order-row {
+  background: #182338;
+  border-color: rgba(255,255,255,.09);
+}
+
+.broker-app.dark-theme .order-info strong {
+  color: #f4f7ff !important;
+  font-weight: 700;
+}
+
+.broker-app.dark-theme .order-info span {
+  color: #aebed8 !important;
+}
+
+.broker-app.dark-theme .order-total-small {
+  color: #f4f7ff !important;
+  font-weight: 750;
+}
+
+.broker-app.dark-theme .order-row:hover {
+  background: #22324c;
+}
+
+
+/* DALALX MARKET WATCH PRICE VISIBILITY FIX */
+
+.broker-app.dark-theme .market-table-row .ltp,
+.broker-app.dark-theme .market-table-row .day-open {
+  color: #f4f7ff !important;
+  opacity: 1 !important;
+}
+
+.broker-app.dark-theme .market-table-row .market-company strong {
+  color: #f4f7ff !important;
+}
+
+.broker-app.dark-theme .market-table-row .market-company span {
+  color: #aebed8 !important;
+}
+
+.broker-app.dark-theme .market-table-row .green {
+  color: #35d6a3 !important;
+}
+
+.broker-app.dark-theme .market-table-row .red {
+  color: #ff718b !important;
+}
+
+.broker-app.dark-theme .market-table-header {
+  background: #202b40 !important;
+  color: #b8c8e5 !important;
+}
+
+
+/* DALALX HOLDINGS DASHBOARD VISIBILITY FIX */
+
+.broker-app.dark-theme .holdings-list,
+.broker-app.dark-theme .holding-row {
+  background: #182338;
+}
+
+.broker-app.dark-theme .holding-row strong,
+.broker-app.dark-theme .holding-row .holding-symbol,
+.broker-app.dark-theme .holding-row .holding-value {
+  color: #f4f7ff !important;
+  opacity: 1 !important;
+}
+
+.broker-app.dark-theme .holding-row span,
+.broker-app.dark-theme .holding-row small {
+  color: #aebed8;
+}
+
+.broker-app.dark-theme .holding-row .green {
+  color: #35d6a3 !important;
+}
+
+.broker-app.dark-theme .holding-row .red {
+  color: #ff718b !important;
+}
+
+
+/* DALALX DYNAMIC PNL COLORS */
+
+/* Positive profit */
+.broker-app.dark-theme .stat-card strong.green,
+.broker-app.light-theme .stat-card strong.green,
+.broker-app .stat-card strong.green {
+  color: #16c784 !important;
+}
+
+/* Negative loss */
+.broker-app.dark-theme .stat-card strong.red,
+.broker-app.light-theme .stat-card strong.red,
+.broker-app .stat-card strong.red {
+  color: #ea3943 !important;
+}
+
+/* Zero P&L */
+.broker-app .stat-card strong:not(.green):not(.red) {
+  color: inherit;
+}
+
+
+/* DALALX Dashboard Heading Fix */
+.broker-app .dashboard-heading h1 {
+  font-size: clamp(24px, 2.5vw, 34px) !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: none !important;
+  transform: none !important;
+  position: relative !important;
+  margin: 8px 0 10px !important;
+}
+
+.broker-app.dark-theme .dashboard-heading h1 {
+  color: #f8fafc !important;
+}
+
+
+/* DALALX SHARED PAGE HEADING FIX */
+.broker-app .dashboard-heading h1,
+.broker-app .page-heading h1,
+.broker-app .page-header h1 {
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: none !important;
+  transform: none !important;
+  margin: 8px 0 12px !important;
+  position: relative !important;
+}
+
+.broker-app.dark-theme .dashboard-heading h1,
+.broker-app.dark-theme .page-heading h1,
+.broker-app.dark-theme .page-header h1 {
+  color: #f8fafc !important;
+}
+
+/* DALALX: Market Watch / Holdings / Orders page heading layout */
+.broker-app .page-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.broker-app .page-title > div {
+  min-width: 0;
+}
+.broker-app .page-title .small-heading {
+  display: block;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.broker-app .page-title h1 {
+  display: block;
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: clamp(24px, 2.5vw, 30px) !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: none !important;
+}
+.broker-app .page-title p {
+  display: block;
+  margin: 8px 0 0 !important;
+  line-height: 1.5;
+}
+.broker-app.dark-theme .page-title h1 {
+  color: #f8fafc !important;
+}
+@media (max-width: 650px) {
+  .broker-app .page-title {
+    align-items: flex-start;
+  }
 }

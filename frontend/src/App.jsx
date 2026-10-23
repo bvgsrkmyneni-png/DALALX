@@ -1,3 +1,4 @@
+import AdminDashboard from "./components/AdminDashboard";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Sidebar from "./components/Sidebar";
@@ -39,6 +40,43 @@ function App() {
 
   const [balance, setBalance] = useState(100000);
   const [userName, setUserName] = useState("Trader");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!token) {
+      setIsAdmin(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadAdminRole = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/auth/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!cancelled) {
+          setIsAdmin(response.data.user?.role === "ADMIN");
+        }
+      } catch (error) {
+        console.error("Role check failed:", error);
+        if (!cancelled) setIsAdmin(false);
+      }
+    };
+
+    loadAdminRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   // DALALX light / dark theme
   const [theme, setTheme] = useState(() => {
@@ -425,6 +463,13 @@ function App() {
 
   const totalPnl =
     portfolioValue - totalInvested;
+
+    // P&L based on actual purchase price, not market opening price
+  const todayPnl = portfolioWithPrices.reduce(
+    (total, item) => total + item.pnl,
+    0
+  );
+
 
   const totalAccountValue =
     balance + portfolioValue;
@@ -843,8 +888,23 @@ function App() {
 
         <div className="stat-card">
           <div className="stat-icon purple-bg">
-            ◈
-          </div>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>
+</div>
 
           <div>
             <span>
@@ -859,28 +919,31 @@ function App() {
 
         <div className="stat-card">
           <div className="stat-icon green-bg">
-            ↗
-          </div>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 17l6-6 4 4 8-8" />
+    <path d="M15 7h6v6" />
+  </svg>
+</div>
 
           <div>
             <span>
               Today's P&L
             </span>
 
-            <strong
-              className={
-                totalPnl >= 0
-                  ? "green"
-                  : "red"
-              }
-            >
-              {totalPnl >= 0
-                ? "+"
-                : ""}
-              ₹
-              {formatMoney(
-                Math.abs(totalPnl)
-              )}
+            <strong className={todayPnl >= 0 ? "green" : "red"}>
+              {todayPnl >= 0 ? "+" : "-"}
+              {"\u20B9"}
+              {formatMoney(Math.abs(todayPnl))}
             </strong>
           </div>
         </div>
@@ -1024,7 +1087,7 @@ function App() {
 
       <div className="search-box">
         <span>
-          ⌕
+          âŒ•
         </span>
 
         <input
@@ -1121,14 +1184,9 @@ function App() {
                 ? "green"
                 : "red"
             }
-          >
-            {totalPnl >= 0
-              ? "+"
-              : ""}
-            ₹
-            {formatMoney(
-              Math.abs(totalPnl)
-            )}
+          >              {totalPnl >= 0 ? "+" : "-"}
+              {"\u20B9"}
+              {formatMoney(Math.abs(totalPnl))}
           </strong>
         </div>
 
@@ -1140,7 +1198,7 @@ function App() {
         0 ? (
           <div className="empty-box large-empty">
             <div className="empty-icon">
-              ◇
+              â—‡
             </div>
 
             <strong>
@@ -1377,6 +1435,11 @@ function App() {
       case "Transactions":
         return renderTransactions();
 
+      case "Admin Dashboard":
+        return isAdmin
+          ? <AdminDashboard token={token} />
+          : renderDashboard();
+
       case "Funds":
         return renderFunds();
 
@@ -1409,6 +1472,7 @@ function App() {
         setActivePage={setActivePage}
         userName={userName}
         logout={logout}
+        isAdmin={isAdmin}
       />
 
       {/* MAIN */}
@@ -1443,7 +1507,7 @@ function App() {
           </span>
 
           <span>
-            Learn • Trade • Experience
+            Learn â€¢ Trade â€¢ Experience
           </span>
         </footer>
 
@@ -1648,3 +1712,4 @@ function App() {
 }
 
 export default App;
+
