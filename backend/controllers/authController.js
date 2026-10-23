@@ -1,3 +1,4 @@
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
@@ -15,7 +16,7 @@ const registerUser = async (req, res) => {
     }
 
     const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
+      "SELECT user_id FROM users WHERE email = $1",
       [email]
     );
 
@@ -30,11 +31,11 @@ const registerUser = async (req, res) => {
     const result = await pool.query(
       `INSERT INTO users (name, email, password)
        VALUES ($1, $2, $3)
-       RETURNING user_id, name, email, balance, created_at`,
+       RETURNING user_id, name, email, balance, role, created_at`,
       [name, email, hashedPassword]
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       user: result.rows[0]
     });
@@ -42,12 +43,11 @@ const registerUser = async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error"
     });
   }
 };
-
 
 // ==================== LOGIN ====================
 
@@ -96,33 +96,39 @@ const loginUser = async (req, res) => {
       }
     );
 
-    res.json({
+    return res.status(200).json({
       message: "Login successful",
-      token: token,
+      token,
       user: {
         user_id: user.user_id,
         name: user.name,
         email: user.email,
-        balance: user.balance
+        balance: user.balance,
+        role: user.role
       }
     });
 
   } catch (error) {
     console.error("Login error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error"
     });
   }
 };
-
 
 // ==================== GET PROFILE ====================
 
 const getProfile = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT user_id, name, email, balance, created_at
+      `SELECT
+         user_id,
+         name,
+         email,
+         balance,
+         role,
+         created_at
        FROM users
        WHERE user_id = $1`,
       [req.user.userId]
@@ -134,19 +140,18 @@ const getProfile = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.status(200).json({
       user: result.rows[0]
     });
 
   } catch (error) {
     console.error("Profile error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error"
     });
   }
 };
-
 
 // ==================== EXPORT ====================
 

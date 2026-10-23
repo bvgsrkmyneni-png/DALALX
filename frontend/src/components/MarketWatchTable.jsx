@@ -1,4 +1,4 @@
-function MarketWatchTable({
+﻿function MarketWatchTable({
   filteredStocks,
   formatMoney,
   getCurrentPrice,
@@ -15,9 +15,7 @@ function MarketWatchTable({
       </div>
 
       {filteredStocks.map((stock) => {
-        const change = Number(
-          stock.change_percent || 0
-        );
+        const change = Number(stock.change_percent || 0);
 
         return (
           <div
@@ -30,63 +28,41 @@ function MarketWatchTable({
               </div>
 
               <div>
-                <strong>
-                  {stock.symbol}
-                </strong>
-
-                <span>
-                  {stock.company_name}
-                </span>
+                <strong>{stock.symbol}</strong>
+                <span>{stock.company_name}</span>
               </div>
             </div>
 
             <strong className="ltp">
-              ₹
-              {formatMoney(
-                getCurrentPrice(stock)
-              )}
+              {"\u20B9"}
+              {formatMoney(getCurrentPrice(stock))}
             </strong>
 
-            <span
-              className={
-                change >= 0
-                  ? "green"
-                  : "red"
-              }
-            >
+            <span className={change >= 0 ? "green" : "red"}>
               {change >= 0 ? "+" : ""}
               {change.toFixed(2)}%
             </span>
 
             <span className="day-open">
-              ₹
+              {"\u20B9"}
               {formatMoney(
-                stock.day_open_price ||
-                  stock.current_price
+                stock.day_open_price ?? stock.current_price
               )}
             </span>
 
             <div className="row-actions">
               <button
+                type="button"
                 className="quick-buy"
-                onClick={() =>
-                  openOrderModal(
-                    stock,
-                    "BUY"
-                  )
-                }
+                onClick={() => openOrderModal(stock, "BUY")}
               >
                 Buy
               </button>
 
               <button
+                type="button"
                 className="quick-sell"
-                onClick={() =>
-                  openOrderModal(
-                    stock,
-                    "SELL"
-                  )
-                }
+                onClick={() => openOrderModal(stock, "SELL")}
               >
                 Sell
               </button>

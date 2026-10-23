@@ -1,8 +1,10 @@
+
 function Sidebar({
   activePage,
   setActivePage,
   userName,
-  logout
+  logout,
+  isAdmin = false
 }) {
   const menuItems = [
     {
@@ -11,7 +13,7 @@ function Sidebar({
     },
     {
       name: "Market Watch",
-      icon: "◌"
+      icon: "◉"
     },
     {
       name: "Holdings",
@@ -31,25 +33,25 @@ function Sidebar({
     }
   ];
 
+  // Only admins can see the Admin Dashboard menu
+  if (isAdmin) {
+    menuItems.push({
+      name: "Admin Dashboard",
+      icon: "⚙"
+    });
+  }
+
   return (
     <aside className="broker-sidebar">
-
       <div className="broker-logo">
-
         <div className="brand-mark small-mark">
           DX
         </div>
 
         <div>
-          <strong>
-            DALALX
-          </strong>
-
-          <span>
-            VIRTUAL MARKET
-          </span>
+          <strong>DALALX</strong>
+          <span>VIRTUAL MARKET</span>
         </div>
-
       </div>
 
       <div className="sidebar-section-title">
@@ -57,7 +59,6 @@ function Sidebar({
       </div>
 
       <nav className="broker-nav">
-
         {menuItems.map((item) => (
           <button
             key={item.name}
@@ -66,44 +67,31 @@ function Sidebar({
                 ? "broker-nav-item active"
                 : "broker-nav-item"
             }
-            onClick={() =>
-              setActivePage(item.name)
-            }
+            onClick={() => setActivePage(item.name)}
           >
             <span className="nav-icon">
               {item.icon}
             </span>
 
-            <span>
-              {item.name}
-            </span>
+            <span>{item.name}</span>
           </button>
         ))}
-
       </nav>
 
       <div className="sidebar-footer">
-
         <div className="sidebar-user">
-
           <div className="user-avatar">
             {userName
-              ? userName
-                  .substring(0, 1)
-                  .toUpperCase()
+              ? userName.substring(0, 1).toUpperCase()
               : "U"}
           </div>
 
           <div>
-            <strong>
-              {userName}
-            </strong>
-
+            <strong>{userName}</strong>
             <span>
-              Virtual Trader
+              {isAdmin ? "Administrator" : "Virtual Trader"}
             </span>
           </div>
-
         </div>
 
         <button
@@ -112,9 +100,7 @@ function Sidebar({
         >
           Logout
         </button>
-
       </div>
-
     </aside>
   );
 }
