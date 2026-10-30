@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./AdminDashboard.css";
 
-const API = "https://dalalx-backend.onrender.com/api/stocks";
+const API_URL = "https://dalalx-backend.onrender.com/api";
 
 const EMPTY_FORM = {
   symbol: "",
