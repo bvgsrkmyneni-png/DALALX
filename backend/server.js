@@ -5,10 +5,9 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const stockRoutes = require("./routes/stockRoutes");
 const tradeRoutes = require("./routes/tradeRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
-const {
-  startMarketSimulation
-} = require("./services/marketService");
+const { startMarketSimulation } = require("./services/marketService");
 
 const app = express();
 
@@ -24,13 +23,13 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/stocks", stockRoutes);
 app.use("/api/trades", tradeRoutes);
+app.use("/api/payments", paymentRoutes);
 
 const PORT = 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `Server running on http://localhost:${PORT}`
-  );
+  console.log("Server running on http://localhost:" + PORT);
+  console.log("DALALX Razorpay payment routes enabled.");
 
   startMarketSimulation();
 });
