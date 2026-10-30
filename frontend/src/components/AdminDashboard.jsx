@@ -35,12 +35,14 @@ function AdminDashboard({ token }) {
     [token]
   );
 
-  // Public API: load companies without requiring a token.
+  // Load companies from the public API
   const loadStocks = useCallback(async () => {
     setFetching(true);
 
     try {
       const response = await axios.get(API);
+      console.log("DALALX Stocks API:", response.data);
+
       const companyList = response.data?.stocks;
 
       if (!Array.isArray(companyList)) {
@@ -50,13 +52,16 @@ function AdminDashboard({ token }) {
       setStocks(companyList);
       setNotice(null);
     } catch (error) {
-      console.error("Load stocks error:", error);
+      console.error("Load stocks error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url
+      });
 
       setNotice({
         type: "error",
-        text:
-          error.response?.data?.message ||
-          "Unable to load companies. Please try again."
+        text: `Load failed: ${error.response?.data?.message || error.message}`
       });
     } finally {
       setFetching(false);
@@ -117,12 +122,10 @@ function AdminDashboard({ token }) {
 
     setNotice(null);
 
-    document
-      .getElementById("apple-company-form")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+    document.getElementById("apple-company-form")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   };
 
   const handleSubmit = async (event) => {
@@ -204,13 +207,17 @@ function AdminDashboard({ token }) {
       resetForm();
       await loadStocks();
     } catch (error) {
-      console.error("Save company error:", error);
+      console.error("Save company error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
 
       setNotice({
         type: "error",
-        text:
-          error.response?.data?.message ||
-          "Unable to save company. Please check your admin access."
+        text: `Save failed: ${error.response?.data?.message || error.message}`
       });
     } finally {
       setLoading(false);
@@ -289,9 +296,7 @@ function AdminDashboard({ token }) {
         <article className="apple-stat">
           <div className="apple-stat-icon apple-blue">₹</div>
           <span>Average Share Price</span>
-          <strong className="apple-money">
-            ₹{money(stats.average)}
-          </strong>
+          <strong className="apple-money">₹{money(stats.average)}</strong>
           <small>Across all listings</small>
         </article>
       </div>
@@ -300,12 +305,8 @@ function AdminDashboard({ token }) {
         <section className="apple-card" id="apple-company-form">
           <div className="apple-card-header">
             <div>
-              <div className="apple-section-label">
-                COMPANY MANAGEMENT
-              </div>
-              <h2>
-                {editingId !== null ? "Edit company" : "Add a company"}
-              </h2>
+              <div className="apple-section-label">COMPANY MANAGEMENT</div>
+              <h2>{editingId !== null ? "Edit company" : "Add a company"}</h2>
               <p>
                 {editingId !== null
                   ? "Make changes to an existing listing."
@@ -406,9 +407,7 @@ function AdminDashboard({ token }) {
         <section className="apple-card apple-market-panel">
           <div className="apple-market-heading">
             <div>
-              <div className="apple-section-label">
-                MARKET INTELLIGENCE
-              </div>
+              <div className="apple-section-label">MARKET INTELLIGENCE</div>
               <h2>Live Market Overview</h2>
               <p>Insights from your listed stocks.</p>
             </div>
