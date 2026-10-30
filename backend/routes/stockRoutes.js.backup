@@ -1,0 +1,23 @@
+
+const express = require("express");
+
+const { getStocks } = require("../controllers/stockController");
+const { addStock } = require("../controllers/adminStockController");
+
+const authenticateToken = require("../middleware/authMiddleware");
+const requireAdmin = require("../middleware/adminMiddleware");
+
+const router = express.Router();
+
+// Public: Get all stocks
+router.get("/", getStocks);
+
+// Admin only: Add a new company/stock
+router.post(
+  "/",
+  authenticateToken,
+  requireAdmin,
+  addStock
+);
+
+module.exports = router;

@@ -244,4 +244,5 @@ module.exports = {
   createWalletOrder,
   verifyWalletPayment,
   getWalletBalance
-};
+
+}

@@ -1,0 +1,558 @@
+﻿import { useEffect, useState } from "react";
+import axios from "axios";
+import "./AdminDashboard.css";
+
+const API = "http://localhost:5000/api/stocks";
+
+const emptyForm = {
+  symbol: "",
+  company_name: "",
+  current_price: ""
+};
+
+const formatPrice = (value) =>
+  Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+function AdminDashboard({ token }) {
+  const [stocks, setStocks] = useState([]);
+  const [search, setSearch] = useState("");
+  const [form, setForm] = useState({ ...emptyForm });
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [notice, setNotice] = useState(null);
+
+  const loadStocks = async () => {
+    setFetching(true);
+
+    try {
+      const response = await axios.get(API);
+      setStocks(response.data.stocks || []);
+    } catch (error) {
+      console.error("Stock loading error:", error);
+      setNotice({
+        type: "error",
+        text: "Unable to load companies."
+      });
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStocks();
+  }, []);
+
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({ ...emptyForm });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const symbol = form.symbol.trim().toUpperCase();
+    const name = form.company_name.trim();
+    const price = Number(form.current_price);
+
+    if (!/^[A-Z0-9.-]{1,20}$/.test(symbol)) {
+      setNotice({
+        type: "error",
+        text: "Enter a valid stock symbol."
+      });
+      return;
+    }
+
+    if (name.length < 2 || name.length > 150) {
+      setNotice({
+        type: "error",
+        text: "Company name must contain 2 to 150 characters."
+      });
+      return;
+    }
+
+    if (
+      form.current_price === "" ||
+      !Number.isFinite(price) ||
+      price <= 0
+    ) {
+      setNotice({
+        type: "error",
+        text: "Enter a valid positive stock price."
+      });
+      return;
+    }
+
+    setLoading(true);
+    setNotice(null);
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      const payload = {
+        company_name: name,
+        current_price: price
+      };
+
+      let response;
+
+      if (editingId !== null) {
+        response = await axios.put(
+          `${API}/${editingId}`,
+          payload,
+          config
+        );
+      } else {
+        response = await axios.post(
+          API,
+          {
+            ...payload,
+            symbol
+          },
+          config
+        );
+      }
+
+      setNotice({
+        type: "success",
+        text: response.data.message || "Saved successfully."
+      });
+
+      resetForm();
+      await loadStocks();
+    } catch (error) {
+      setNotice({
+        type: "error",
+        text:
+          error.response?.data?.message ||
+          "Unable to save company."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const editCompany = (stock) => {
+    setEditingId(stock.stock_id);
+
+    setForm({
+      symbol: stock.symbol,
+      company_name: stock.company_name,
+      current_price: String(stock.current_price)
+    });
+
+    setNotice(null);
+
+    document
+      .getElementById("dx-company-form")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+  };
+
+  const filteredStocks = stocks.filter((stock) => {
+    const query = search.trim().toLowerCase();
+
+    return (
+      stock.symbol.toLowerCase().includes(query) ||
+      stock.company_name.toLowerCase().includes(query)
+    );
+  });
+
+  const risingStocks = stocks.filter(
+    (stock) => Number(stock.change_percent || 0) > 0
+  ).length;
+
+  const fallingStocks = stocks.filter(
+    (stock) => Number(stock.change_percent || 0) < 0
+  ).length;
+
+  const averagePrice = stocks.length
+    ? stocks.reduce(
+        (sum, stock) =>
+          sum + Number(stock.current_price || 0),
+        0
+      ) / stocks.length
+    : 0;
+
+  return (
+    <div className="dx-admin">
+      <div className="dx-admin-hero">
+        <div className="dx-admin-hero-content">
+          <div className="dx-admin-eyebrow">
+            <span className="dx-admin-live-dot" />
+            DALALX ADMINISTRATION
+          </div>
+
+          <h1>Market Control Center</h1>
+
+          <p>
+            Manage your virtual stock exchange with
+            confidence, clarity and complete control.
+          </p>
+
+          <div className="dx-admin-hero-actions">
+            <a href="#dx-company-form" className="dx-admin-primary">
+              + Add Company
+            </a>
+
+            <a href="#dx-company-list" className="dx-admin-secondary">
+              View Companies
+            </a>
+          </div>
+        </div>
+
+        <div className="dx-admin-hero-emblem">
+          <div className="dx-admin-emblem-ring">
+            <span>DX</span>
+          </div>
+          <small>MARKET ADMIN</small>
+        </div>
+      </div>
+
+      <div className="dx-admin-stats">
+        <div className="dx-admin-stat">
+          <div className="dx-admin-stat-top">
+            <span>Listed Companies</span>
+            <span className="dx-admin-stat-icon">▦</span>
+          </div>
+
+          <strong>{stocks.length}</strong>
+          <small>Total available stocks</small>
+        </div>
+
+        <div className="dx-admin-stat">
+          <div className="dx-admin-stat-top">
+            <span>Rising Stocks</span>
+            <span className="dx-admin-stat-icon dx-up">↗</span>
+          </div>
+
+          <strong className="dx-up">{risingStocks}</strong>
+          <small>Positive market movement</small>
+        </div>
+
+        <div className="dx-admin-stat">
+          <div className="dx-admin-stat-top">
+            <span>Falling Stocks</span>
+            <span className="dx-admin-stat-icon dx-down">↘</span>
+          </div>
+
+          <strong className="dx-down">{fallingStocks}</strong>
+          <small>Negative market movement</small>
+        </div>
+
+        <div className="dx-admin-stat">
+          <div className="dx-admin-stat-top">
+            <span>Average Stock Price</span>
+            <span className="dx-admin-stat-icon">₹</span>
+          </div>
+
+          <strong>₹{formatPrice(averagePrice)}</strong>
+          <small>Average listed share price</small>
+        </div>
+      </div>
+
+      <div className="dx-admin-main-grid">
+        <section
+          className="dx-admin-glass dx-admin-form-panel"
+          id="dx-company-form"
+        >
+          <div className="dx-admin-section-heading">
+            <div>
+              <span className="dx-admin-kicker">
+                COMPANY MANAGEMENT
+              </span>
+
+              <h2>
+                {editingId !== null
+                  ? "Edit Company"
+                  : "Add New Company"}
+              </h2>
+
+              <p>
+                {editingId !== null
+                  ? "Update the company name or stock price."
+                  : "List a new company on DALALX."}
+              </p>
+            </div>
+
+            <span className="dx-admin-heading-icon">
+              {editingId !== null ? "✎" : "+"}
+            </span>
+          </div>
+
+          <form onSubmit={handleSubmit} className="dx-admin-form">
+            <label>
+              <span>Stock Symbol</span>
+
+              <input
+                required
+                maxLength={20}
+                disabled={editingId !== null}
+                placeholder="e.g. DXTECH"
+                value={form.symbol}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    symbol: e.target.value.toUpperCase()
+                  })
+                }
+              />
+            </label>
+
+            <label>
+              <span>Company Name</span>
+
+              <input
+                required
+                maxLength={150}
+                placeholder="e.g. DALALX Technologies"
+                value={form.company_name}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    company_name: e.target.value
+                  })
+                }
+              />
+            </label>
+
+            <label>
+              <span>Stock Price (₹)</span>
+
+              <input
+                required
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="111.00"
+                value={form.current_price}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    current_price: e.target.value
+                  })
+                }
+              />
+            </label>
+
+            <button
+              className="dx-admin-submit"
+              type="submit"
+              disabled={loading}
+            >
+              {loading
+                ? "Saving..."
+                : editingId !== null
+                ? "✓ Update Company"
+                : "+ List Company"}
+            </button>
+
+            {editingId !== null && (
+              <button
+                className="dx-admin-cancel"
+                type="button"
+                onClick={resetForm}
+              >
+                Cancel Editing
+              </button>
+            )}
+
+            {notice && (
+              <div className={`dx-admin-notice ${notice.type}`} role="status">
+                {notice.text}
+              </div>
+            )}
+          </form>
+        </section>
+
+        <section className="dx-admin-glass dx-admin-info-panel">
+          <span className="dx-admin-kicker">
+            EXCHANGE OVERVIEW
+          </span>
+
+          <h2>Market Administration</h2>
+
+          <p>
+            Manage listings and keep company information
+            accurate across your virtual exchange.
+          </p>
+
+          <div className="dx-admin-info-item">
+            <span className="dx-admin-info-icon">+</span>
+
+            <div>
+              <strong>Company Listings</strong>
+              <small>
+                Add new companies with an opening price.
+              </small>
+            </div>
+          </div>
+
+          <div className="dx-admin-info-item">
+            <span className="dx-admin-info-icon">✎</span>
+
+            <div>
+              <strong>Price Management</strong>
+              <small>
+                Update company names and stock prices.
+              </small>
+            </div>
+          </div>
+
+          <div className="dx-admin-info-item">
+            <span className="dx-admin-info-icon">⌕</span>
+
+            <div>
+              <strong>Company Discovery</strong>
+              <small>
+                Search all listed companies instantly.
+              </small>
+            </div>
+          </div>
+
+          <div className="dx-admin-policy">
+            <strong>Permanent Listing Policy</strong>
+            <p>
+              Listed companies cannot be deleted.
+              Existing trading records remain preserved.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <section
+        className="dx-admin-glass dx-admin-list-panel"
+        id="dx-company-list"
+      >
+        <div className="dx-admin-list-header">
+          <div>
+            <span className="dx-admin-kicker">
+              STOCK EXCHANGE
+            </span>
+
+            <h2>Listed Companies</h2>
+
+            <p>
+              Browse and manage all DALALX listings.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="dx-admin-refresh"
+            onClick={loadStocks}
+            disabled={fetching}
+          >
+            {fetching ? "Refreshing..." : "↻ Refresh"}
+          </button>
+        </div>
+
+        <div className="dx-admin-search-row">
+          <input
+            type="search"
+            placeholder="Search by symbol or company name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <span>
+            {filteredStocks.length} of {stocks.length} companies
+          </span>
+        </div>
+
+        <div className="dx-admin-table-wrap">
+          <table className="dx-admin-table">
+            <thead>
+              <tr>
+                <th>COMPANY</th>
+                <th>SYMBOL</th>
+                <th>STOCK PRICE</th>
+                <th>CHANGE</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredStocks.map((stock) => {
+                const change = Number(
+                  stock.change_percent || 0
+                );
+
+                return (
+                  <tr key={stock.stock_id}>
+                    <td>
+                      <div className="dx-admin-company">
+                        <div className="dx-admin-avatar">
+                          {stock.symbol.slice(0, 2)}
+                        </div>
+
+                        <strong>{stock.company_name}</strong>
+                      </div>
+                    </td>
+
+                    <td>
+                      <span className="dx-admin-symbol">
+                        {stock.symbol}
+                      </span>
+                    </td>
+
+                    <td className="dx-admin-price">
+                      ₹{formatPrice(stock.current_price)}
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          change >= 0
+                            ? "dx-admin-change positive"
+                            : "dx-admin-change negative"
+                        }
+                      >
+                        {change >= 0 ? "+" : ""}
+                        {change.toFixed(2)}%
+                      </span>
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="dx-admin-edit"
+                        onClick={() => editCompany(stock)}
+                      >
+                        ✎ Edit
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {filteredStocks.length === 0 && (
+            <div className="dx-admin-empty">
+              {fetching
+                ? "Loading companies..."
+                : "No companies found."}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="dx-admin-footer">
+        <span>DALALX • Virtual Stock Exchange</span>
+        <span>Administrator Control Center</span>
+      </div>
+    </div>
+  );
+}
+
+export default AdminDashboard;

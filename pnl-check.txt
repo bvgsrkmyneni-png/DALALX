@@ -1,0 +1,330 @@
+﻿===== LINE 399 =====
+395:   }, [stocks, search]);
+396: 
+397: 
+398: 
+399:   const portfolioWithPrices = useMemo(() => {
+400:     return portfolio.map((item) => {
+401:       const stock = stocks.find(
+402:         (s) =>
+403:           Number(s.stock_id) ===
+404:           Number(item.stock_id)
+405:       );
+406: 
+407:       const currentPrice = stock
+408:         ? getCurrentPrice(stock)
+===== LINE 450 =====
+446:       };
+447:     });
+448:   }, [portfolio, stocks]);
+449: 
+450:   const portfolioValue =
+451:     portfolioWithPrices.reduce(
+452:       (total, item) =>
+453:         total + item.currentValue,
+454:       0
+455:     );
+456: 
+457:   const totalInvested =
+458:     portfolioWithPrices.reduce(
+459:       (total, item) =>
+===== LINE 451 =====
+447:     });
+448:   }, [portfolio, stocks]);
+449: 
+450:   const portfolioValue =
+451:     portfolioWithPrices.reduce(
+452:       (total, item) =>
+453:         total + item.currentValue,
+454:       0
+455:     );
+456: 
+457:   const totalInvested =
+458:     portfolioWithPrices.reduce(
+459:       (total, item) =>
+460:         total + item.invested,
+===== LINE 457 =====
+453:         total + item.currentValue,
+454:       0
+455:     );
+456: 
+457:   const totalInvested =
+458:     portfolioWithPrices.reduce(
+459:       (total, item) =>
+460:         total + item.invested,
+461:       0
+462:     );
+463: 
+464:   const totalPnl =
+465:     portfolioValue - totalInvested;
+466: 
+===== LINE 458 =====
+454:       0
+455:     );
+456: 
+457:   const totalInvested =
+458:     portfolioWithPrices.reduce(
+459:       (total, item) =>
+460:         total + item.invested,
+461:       0
+462:     );
+463: 
+464:   const totalPnl =
+465:     portfolioValue - totalInvested;
+466: 
+467:   const totalAccountValue =
+===== LINE 464 =====
+460:         total + item.invested,
+461:       0
+462:     );
+463: 
+464:   const totalPnl =
+465:     portfolioValue - totalInvested;
+466: 
+467:   const totalAccountValue =
+468:     balance + portfolioValue;
+469: 
+470:   
+471: 
+472:   const openOrderModal = (
+473:     stock,
+===== LINE 465 =====
+461:       0
+462:     );
+463: 
+464:   const totalPnl =
+465:     portfolioValue - totalInvested;
+466: 
+467:   const totalAccountValue =
+468:     balance + portfolioValue;
+469: 
+470:   
+471: 
+472:   const openOrderModal = (
+473:     stock,
+474:     type
+===== LINE 468 =====
+464:   const totalPnl =
+465:     portfolioValue - totalInvested;
+466: 
+467:   const totalAccountValue =
+468:     balance + portfolioValue;
+469: 
+470:   
+471: 
+472:   const openOrderModal = (
+473:     stock,
+474:     type
+475:   ) => {
+476:     setSelectedStock(stock);
+477:     setOrderType(type);
+===== LINE 840 =====
+836: 
+837:               <b>
+838:                 â‚¹
+839:                 {formatMoney(
+840:                   portfolioValue
+841:                 )}
+842:               </b>
+843:             </div>
+844:           </div>
+845:         </div>
+846: 
+847:         <div className="hero-right">
+848:           <div className="hero-mini-chart">
+849:             <svg
+===== LINE 908 =====
+904:               Holdings
+905:             </span>
+906: 
+907:             <strong>
+908:               {portfolioWithPrices.length}
+909:             </strong>
+910:           </div>
+911:         </div>
+912: 
+913:         <div className="stat-card">
+914:           <div className="stat-icon green-bg">
+915:   <svg
+916:     width="20"
+917:     height="20"
+===== LINE 938 =====
+934:             </span>
+935: 
+936:             <strong
+937:               className={
+938:                 totalPnl >= 0
+939:                   ? "green"
+940:                   : "red"
+941:               }
+942:             >
+943:               {totalPnl >= 0
+944:                 ? "+"
+945:                 : ""}
+946:               â‚¹
+947:               {formatMoney(
+===== LINE 943 =====
+939:                   ? "green"
+940:                   : "red"
+941:               }
+942:             >
+943:               {totalPnl >= 0
+944:                 ? "+"
+945:                 : ""}
+946:               â‚¹
+947:               {formatMoney(
+948:                 Math.abs(totalPnl)
+949:               )}
+950:             </strong>
+951:           </div>
+952:         </div>
+===== LINE 948 =====
+944:                 ? "+"
+945:                 : ""}
+946:               â‚¹
+947:               {formatMoney(
+948:                 Math.abs(totalPnl)
+949:               )}
+950:             </strong>
+951:           </div>
+952:         </div>
+953: 
+954:         <div className="stat-card">
+955:           <div className="stat-icon orange-bg">
+956:             #
+957:           </div>
+===== LINE 1056 =====
+1052: 
+1053:       <div className="dashboard-grid bottom-grid">
+1054: 
+1055:         <DashboardHoldings
+1056:   portfolioWithPrices={portfolioWithPrices}
+1057:   formatMoney={formatMoney}
+1058:   setActivePage={setActivePage}
+1059: />
+1060: 
+1061:         <DashboardRecentOrders
+1062:   transactions={transactions}
+1063:   formatMoney={formatMoney}
+1064:   setActivePage={setActivePage}
+1065: />
+===== LINE 1161 =====
+1157: 
+1158:           <strong>
+1159:             â‚¹
+1160:             {formatMoney(
+1161:               portfolioValue
+1162:             )}
+1163:           </strong>
+1164:         </div>
+1165: 
+1166:         <div>
+1167:           <span>
+1168:             Invested value
+1169:           </span>
+1170: 
+===== LINE 1174 =====
+1170: 
+1171:           <strong>
+1172:             â‚¹
+1173:             {formatMoney(
+1174:               totalInvested
+1175:             )}
+1176:           </strong>
+1177:         </div>
+1178: 
+1179:         <div>
+1180:           <span>
+1181:             Total P&L
+1182:           </span>
+1183: 
+===== LINE 1186 =====
+1182:           </span>
+1183: 
+1184:           <strong
+1185:             className={
+1186:               totalPnl >= 0
+1187:                 ? "green"
+1188:                 : "red"
+1189:             }
+1190:           >
+1191:             {totalPnl >= 0
+1192:               ? "+"
+1193:               : ""}
+1194:             â‚¹
+1195:             {formatMoney(
+===== LINE 1191 =====
+1187:                 ? "green"
+1188:                 : "red"
+1189:             }
+1190:           >
+1191:             {totalPnl >= 0
+1192:               ? "+"
+1193:               : ""}
+1194:             â‚¹
+1195:             {formatMoney(
+1196:               Math.abs(totalPnl)
+1197:             )}
+1198:           </strong>
+1199:         </div>
+1200: 
+===== LINE 1196 =====
+1192:               ? "+"
+1193:               : ""}
+1194:             â‚¹
+1195:             {formatMoney(
+1196:               Math.abs(totalPnl)
+1197:             )}
+1198:           </strong>
+1199:         </div>
+1200: 
+1201:       </div>
+1202: 
+1203:       <section className="panel">
+1204: 
+1205:         {portfolioWithPrices.length ===
+===== LINE 1205 =====
+1201:       </div>
+1202: 
+1203:       <section className="panel">
+1204: 
+1205:         {portfolioWithPrices.length ===
+1206:         0 ? (
+1207:           <div className="empty-box large-empty">
+1208:             <div className="empty-icon">
+1209:               Ã¢â€”â€¡
+1210:             </div>
+1211: 
+1212:             <strong>
+1213:               Your portfolio is empty
+1214:             </strong>
+===== LINE 1224 =====
+1220:           </div>
+1221:         ) : (
+1222:             
+1223:           <PortfolioTable
+1224:             portfolioWithPrices={portfolioWithPrices}
+1225:             formatMoney={formatMoney}
+1226:           />
+1227:         )}
+1228: 
+1229:       </section>
+1230:     </>
+1231:   );
+1232: 
+1233:   /*
+===== LINE 1416 =====
+1412:       </div>
+1413: 
+1414:      <FundsCard
+1415:   balance={balance}
+1416:   portfolioValue={portfolioValue}
+1417:   totalAccountValue={totalAccountValue}
+1418:   formatMoney={formatMoney}
+1419: />
+1420:     </>
+1421:   );
+1422: 
+1423:   /*
+1424:   ==================================================
+1425:   PAGE ROUTER

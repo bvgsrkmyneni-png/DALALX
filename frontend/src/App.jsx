@@ -1,4 +1,4 @@
-import AdminDashboard from "./components/AdminDashboard";
+﻿import AdminDashboard from "./components/AdminDashboard";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Sidebar from "./components/Sidebar";
@@ -39,6 +39,8 @@ function App() {
   const [transactions, setTransactions] = useState([]);
 
   const [balance, setBalance] = useState(100000);
+  const [walletAmount, setWalletAmount] = useState("");
+const [paymentLoading, setPaymentLoading] = useState(false);
   const [userName, setUserName] = useState("Trader");
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -128,7 +130,128 @@ function App() {
       Authorization: `Bearer ${token}`
     }
   };
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
 
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+
+    document.body.appendChild(script);
+  });
+};
+
+const handleAddMoney = async () => {
+  const amount = Number(walletAmount);
+
+  if (!Number.isFinite(amount) || amount < 1 || amount > 100000) {
+    alert("Enter an amount between ₹1 and ₹1,00,000.");
+    return;
+  }
+
+  if (Math.round(amount * 100) !== amount * 100) {
+    alert("Amount can have a maximum of two decimal places.");
+    return;
+  }
+
+  try {
+    setPaymentLoading(true);
+
+    const scriptLoaded = await loadRazorpayScript();
+
+    if (!scriptLoaded) {
+      alert("Unable to load Razorpay Checkout. Check your internet connection.");
+      return;
+    }
+
+    // Create order on the backend
+    const orderResponse = await axios.post(
+      `${API_URL}/payments/create-order`,
+      { amount },
+      authConfig
+    );
+
+    const order = orderResponse.data;
+
+    const options = {
+      key: order.key,
+      amount: order.amount,
+      currency: order.currency,
+      name: "DALALX",
+      description: "Virtual Wallet Top-up",
+      order_id: order.orderId,
+      prefill: {
+        name: order.name,
+        email: order.email
+      },
+      theme: {
+        color: "#2563eb"
+      },
+
+      handler: async function (paymentResponse) {
+        try {
+          const verifyResponse = await axios.post(
+            `${API_URL}/payments/verify`,
+            {
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature
+            },
+            authConfig
+          );
+
+          alert(verifyResponse.data.message || "Wallet credited successfully!");
+
+          setWalletAmount("");
+
+          await fetchPortfolio();
+        } catch (error) {
+          console.error("Payment verification error:", error);
+
+          alert(
+            error.response?.data?.message ||
+            "Payment verification failed. Contact support if money was deducted."
+          );
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          console.log("Razorpay checkout closed.");
+        }
+      }
+    };
+
+    const paymentWindow = new window.Razorpay(options);
+
+    paymentWindow.on("payment.failed", function (response) {
+      console.error("Razorpay payment failed:", response.error);
+
+      alert(
+        response.error?.description ||
+        "Payment failed. Please try again."
+      );
+    });
+
+    paymentWindow.open();
+
+  } catch (error) {
+    console.error("Wallet top-up error:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "Unable to start payment. Please try again."
+    );
+  } finally {
+    setPaymentLoading(false);
+  }
+};
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -1386,31 +1509,27 @@ function App() {
   */
 
   const renderFunds = () => (
-    <>
-      <div className="page-title">
-        <div>
-          <div className="small-heading">
-            ACCOUNT
-          </div>
-
-          <h1>
-            Funds
-          </h1>
-
-          <p>
-            Manage your virtual trading funds.
-          </p>
-        </div>
+  <>
+    <div className="page-title">
+      <div>
+        <div className="small-heading">ACCOUNT</div>
+        <h1>Funds</h1>
+        <p>Manage your virtual trading funds.</p>
       </div>
+    </div>
 
-     <FundsCard
-  balance={balance}
-  portfolioValue={portfolioValue}
-  totalAccountValue={totalAccountValue}
-  formatMoney={formatMoney}
-/>
-    </>
-  );
+    <FundsCard
+      balance={balance}
+      portfolioValue={portfolioValue}
+      totalAccountValue={totalAccountValue}
+      formatMoney={formatMoney}
+      amount={walletAmount}
+      setAmount={setWalletAmount}
+      handleAddMoney={handleAddMoney}
+      paymentLoading={paymentLoading}
+    />
+  </>
+);
 
   /*
   ==================================================

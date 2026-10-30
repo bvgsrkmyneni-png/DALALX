@@ -16,4 +16,8 @@ router.post("/create-order", createWalletOrder);
 router.post("/verify", verifyWalletPayment);
 router.get("/balance", getWalletBalance);
 
+// <<<<<<< HEA
 module.exports = router;
+// =======
+module.exports = router;
+

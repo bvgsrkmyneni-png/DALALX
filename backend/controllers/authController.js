@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
+const sendEmail = require("../config/email");
 
 // ==================== REGISTER ====================
 
@@ -34,6 +35,30 @@ const registerUser = async (req, res) => {
        RETURNING user_id, name, email, balance, role, created_at`,
       [name, email, hashedPassword]
     );
+
+    // Send welcome email (email failure won't affect registration)
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Welcome to DALALX!",
+        text: `Hi ${name}, welcome to DALALX! Your account has been created successfully.`,
+        html: `
+          <div style="font-family:Arial;padding:25px;color:#222">
+            <h2 style="color:#2563eb">Welcome to DALALX!</h2>
+            <p>Hi ${name},</p>
+            <p>Your DALALX account has been created successfully.</p>
+            <p>You can now explore the virtual stock market,
+            buy and sell virtual stocks, and track your portfolio.</p>
+            <h3>Happy Trading!</h3>
+            <p><b>Team DALALX</b></p>
+          </div>
+        `
+      });
+
+      console.log("Welcome email sent:", email);
+    } catch (emailError) {
+      console.error("Welcome email failed:", emailError.message);
+    }
 
     return res.status(201).json({
       message: "User registered successfully",

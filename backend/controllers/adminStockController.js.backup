@@ -1,0 +1,73 @@
+
+const pool = require("../config/db");
+
+// ADMIN: Add a new company/stock
+const addStock = async (req, res) => {
+  try {
+    const { symbol, company_name, current_price } = req.body;
+
+    if (
+      typeof symbol !== "string" ||
+      typeof company_name !== "string" ||
+      typeof current_price !== "number" ||
+      !Number.isFinite(current_price) ||
+      current_price <= 0
+    ) {
+      return res.status(400).json({
+        message: "Valid symbol, company name and positive price are required"
+      });
+    }
+
+    const cleanSymbol = symbol.trim().toUpperCase();
+    const cleanName = company_name.trim();
+
+    if (
+      !/^[A-Z0-9.-]{1,20}$/.test(cleanSymbol) ||
+      cleanName.length < 2 ||
+      cleanName.length > 150
+    ) {
+      return res.status(400).json({
+        message: "Invalid stock symbol or company name"
+      });
+    }
+
+    const existing = await pool.query(
+      "SELECT stock_id FROM stocks WHERE UPPER(symbol) = $1",
+      [cleanSymbol]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(409).json({
+        message: "Stock symbol already exists"
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO stocks
+       (symbol, company_name, current_price, change_percent, day_open_price)
+       VALUES ($1, $2, $3, 0, $3)
+       RETURNING *`,
+      [cleanSymbol, cleanName, current_price]
+    );
+
+    return res.status(201).json({
+      message: "Company added successfully",
+      stock: result.rows[0]
+    });
+
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({
+        message: "Stock already exists"
+      });
+    }
+
+    console.error("Add stock error:", error);
+
+    return res.status(500).json({
+      message: "Server error"
+    });
+  }
+};
+
+module.exports = { addStock };

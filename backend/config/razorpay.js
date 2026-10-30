@@ -9,4 +9,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+// // <<<<<<< HEAD
+
+// =======
 module.exports = razorpay;
+// >>>>>>>
+// 4cfb4f3 (Update code)
