@@ -14,7 +14,7 @@ import DashboardHoldings from "./components/DashboardHoldings";
 import DashboardRecentOrders from "./components/DashboardRecentOrders";
 import "./App.css";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://dalalx-backend.onrender.com/api";
 
 function App() {
   const [token, setToken] = useState(
