@@ -1,8 +1,10 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./AdminDashboard.css";
 
-const API = "http://localhost:5000/api/stocks";
+const API = "https://dalalx-backend.onrender.com/api/stocks";
+const API_URL = "https://dalalx-backend.onrender.com/api";
 
 const EMPTY_FORM = {
   symbol: "",
@@ -25,17 +27,42 @@ function AdminDashboard({ token }) {
   const [fetching, setFetching] = useState(false);
   const [notice, setNotice] = useState(null);
 
+  const authConfig = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }),
+    [token]
+  );
+
+  // Load companies from the public API
   const loadStocks = useCallback(async () => {
     setFetching(true);
 
     try {
       const response = await axios.get(API);
-      setStocks(response.data.stocks || []);
+      console.log("DALALX Stocks API:", response.data);
+
+      const companyList = response.data?.stocks;
+
+      if (!Array.isArray(companyList)) {
+        throw new Error("Invalid stocks response from server");
+      }
+
+      setStocks(companyList);
+      setNotice(null);
     } catch (error) {
-      console.error("Load stocks:", error);
+      console.error("Load stocks error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url
+      });
+
       setNotice({
         type: "error",
-        text: "Unable to load companies. Check your backend."
+        text: `Load failed: ${error.response?.data?.message || error.message}`
       });
     } finally {
       setFetching(false);
@@ -48,16 +75,16 @@ function AdminDashboard({ token }) {
 
   const stats = useMemo(() => {
     const rising = stocks.filter(
-      (s) => Number(s.change_percent || 0) > 0
+      (stock) => Number(stock.change_percent || 0) > 0
     ).length;
 
     const falling = stocks.filter(
-      (s) => Number(s.change_percent || 0) < 0
+      (stock) => Number(stock.change_percent || 0) < 0
     ).length;
 
     const average = stocks.length
       ? stocks.reduce(
-          (sum, s) => sum + Number(s.current_price || 0),
+          (sum, stock) => sum + Number(stock.current_price || 0),
           0
         ) / stocks.length
       : 0;
@@ -75,8 +102,8 @@ function AdminDashboard({ token }) {
 
     return stocks.filter(
       (stock) =>
-        stock.symbol.toLowerCase().includes(query) ||
-        stock.company_name.toLowerCase().includes(query)
+        String(stock.symbol || "").toLowerCase().includes(query) ||
+        String(stock.company_name || "").toLowerCase().includes(query)
     );
   }, [stocks, search]);
 
@@ -87,23 +114,31 @@ function AdminDashboard({ token }) {
 
   const editCompany = (stock) => {
     setEditingId(stock.stock_id);
+
     setForm({
       symbol: stock.symbol,
       company_name: stock.company_name,
       current_price: String(stock.current_price)
     });
+
     setNotice(null);
 
-    document
-      .getElementById("apple-company-form")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+    document.getElementById("apple-company-form")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!token) {
+      setNotice({
+        type: "error",
+        text: "Please log in again to manage companies."
+      });
+      return;
+    }
 
     const symbol = form.symbol.trim().toUpperCase();
     const name = form.company_name.trim();
@@ -141,12 +176,6 @@ function AdminDashboard({ token }) {
     setNotice(null);
 
     try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      };
-
       const payload = {
         company_name: name,
         current_price: price
@@ -158,36 +187,73 @@ function AdminDashboard({ token }) {
         response = await axios.put(
           `${API}/${editingId}`,
           payload,
-          config
+          authConfig
         );
       } else {
         response = await axios.post(
           API,
-          { ...payload, symbol },
-          config
+          {
+            ...payload,
+            symbol
+          },
+          authConfig
         );
       }
 
       setNotice({
         type: "success",
-        text:
-          response.data.message ||
-          "Company saved successfully."
+        text: response.data.message || "Company saved successfully."
       });
 
       resetForm();
       await loadStocks();
     } catch (error) {
+      console.error("Save company error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+
       setNotice({
         type: "error",
-        text:
-          error.response?.data?.message ||
-          "Unable to save company."
+        text: `Save failed: ${error.response?.data?.message || error.message}`
       });
     } finally {
       setLoading(false);
     }
   };
+
+  const gainers = [...stocks]
+    .filter((stock) => Number(stock.change_percent) > 0)
+    .sort(
+      (a, b) =>
+        Number(b.change_percent) - Number(a.change_percent)
+    )
+    .slice(0, 3);
+
+  const losers = [...stocks]
+    .filter((stock) => Number(stock.change_percent) < 0)
+    .sort(
+      (a, b) =>
+        Number(a.change_percent) - Number(b.change_percent)
+    )
+    .slice(0, 3);
+
+  const highest = stocks.length
+    ? [...stocks].sort(
+        (a, b) =>
+          Number(b.current_price) - Number(a.current_price)
+      )[0]
+    : null;
+
+  const lowest = stocks.length
+    ? [...stocks].sort(
+        (a, b) =>
+          Number(a.current_price) - Number(b.current_price)
+      )[0]
+    : null;
 
   return (
     <div className="apple-admin">
@@ -197,12 +263,8 @@ function AdminDashboard({ token }) {
             <span className="apple-status-dot" />
             DALALX ADMINISTRATION
           </div>
-
           <h1>Overview</h1>
-
-          <p>
-            Everything you need to manage your virtual market.
-          </p>
+          <p>Everything you need to manage your virtual market.</p>
         </div>
 
         <a href="#apple-company-form" className="apple-add-link">
@@ -235,9 +297,7 @@ function AdminDashboard({ token }) {
         <article className="apple-stat">
           <div className="apple-stat-icon apple-blue">₹</div>
           <span>Average Share Price</span>
-          <strong className="apple-money">
-            ₹{money(stats.average)}
-          </strong>
+          <strong className="apple-money">₹{money(stats.average)}</strong>
           <small>Across all listings</small>
         </article>
       </div>
@@ -246,16 +306,8 @@ function AdminDashboard({ token }) {
         <section className="apple-card" id="apple-company-form">
           <div className="apple-card-header">
             <div>
-              <div className="apple-section-label">
-                COMPANY MANAGEMENT
-              </div>
-
-              <h2>
-                {editingId !== null
-                  ? "Edit company"
-                  : "Add a company"}
-              </h2>
-
+              <div className="apple-section-label">COMPANY MANAGEMENT</div>
+              <h2>{editingId !== null ? "Edit company" : "Add a company"}</h2>
               <p>
                 {editingId !== null
                   ? "Make changes to an existing listing."
@@ -354,165 +406,107 @@ function AdminDashboard({ token }) {
         </section>
 
         <section className="apple-card apple-market-panel">
-  <div className="apple-market-heading">
-    <div>
-      <div className="apple-section-label">
-        MARKET INTELLIGENCE
-      </div>
-      <h2>Live Market Overview</h2>
-      <p>Insights from your listed stocks.</p>
-    </div>
+          <div className="apple-market-heading">
+            <div>
+              <div className="apple-section-label">MARKET INTELLIGENCE</div>
+              <h2>Live Market Overview</h2>
+              <p>Insights from your listed stocks.</p>
+            </div>
 
-    <button
-      type="button"
-      className="apple-refresh"
-      disabled={fetching}
-      onClick={loadStocks}
-    >
-      {fetching ? "Refreshing..." : "↻ Refresh"}
-    </button>
-  </div>
-
-  <div className="apple-market-section">
-    <div className="apple-market-title">
-      <span className="apple-market-indicator gain" />
-      Top Gainers
-    </div>
-
-    {[...stocks]
-      .filter(s => Number(s.change_percent) > 0)
-      .sort(
-        (a, b) =>
-          Number(b.change_percent) -
-          Number(a.change_percent)
-      )
-      .slice(0, 3)
-      .map(stock => (
-        <div
-          className="apple-market-item"
-          key={stock.stock_id}
-        >
-          <div>
-            <strong>{stock.symbol}</strong>
-            <small>{stock.company_name}</small>
+            <button
+              type="button"
+              className="apple-refresh"
+              disabled={fetching}
+              onClick={loadStocks}
+            >
+              {fetching ? "Refreshing..." : "↻ Refresh"}
+            </button>
           </div>
 
-          <div className="apple-market-values">
-            <strong>₹{money(stock.current_price)}</strong>
-            <span className="apple-market-up">
-              +{Number(stock.change_percent).toFixed(2)}%
-            </span>
-          </div>
-        </div>
-      ))}
+          <div className="apple-market-section">
+            <div className="apple-market-title">
+              <span className="apple-market-indicator gain" />
+              Top Gainers
+            </div>
 
-    {!stocks.some(s => Number(s.change_percent) > 0) && (
-      <p className="apple-market-empty">
-        No gaining stocks currently.
-      </p>
-    )}
-  </div>
+            {gainers.map((stock) => (
+              <div className="apple-market-item" key={stock.stock_id}>
+                <div>
+                  <strong>{stock.symbol}</strong>
+                  <small>{stock.company_name}</small>
+                </div>
 
-  <div className="apple-market-section">
-    <div className="apple-market-title">
-      <span className="apple-market-indicator loss" />
-      Top Losers
-    </div>
+                <div className="apple-market-values">
+                  <strong>₹{money(stock.current_price)}</strong>
+                  <span className="apple-market-up">
+                    +{Number(stock.change_percent).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            ))}
 
-    {[...stocks]
-      .filter(s => Number(s.change_percent) < 0)
-      .sort(
-        (a, b) =>
-          Number(a.change_percent) -
-          Number(b.change_percent)
-      )
-      .slice(0, 3)
-      .map(stock => (
-        <div
-          className="apple-market-item"
-          key={stock.stock_id}
-        >
-          <div>
-            <strong>{stock.symbol}</strong>
-            <small>{stock.company_name}</small>
+            {gainers.length === 0 && (
+              <p className="apple-market-empty">
+                No gaining stocks currently.
+              </p>
+            )}
           </div>
 
-          <div className="apple-market-values">
-            <strong>₹{money(stock.current_price)}</strong>
-            <span className="apple-market-down">
-              {Number(stock.change_percent).toFixed(2)}%
-            </span>
+          <div className="apple-market-section">
+            <div className="apple-market-title">
+              <span className="apple-market-indicator loss" />
+              Top Losers
+            </div>
+
+            {losers.map((stock) => (
+              <div className="apple-market-item" key={stock.stock_id}>
+                <div>
+                  <strong>{stock.symbol}</strong>
+                  <small>{stock.company_name}</small>
+                </div>
+
+                <div className="apple-market-values">
+                  <strong>₹{money(stock.current_price)}</strong>
+                  <span className="apple-market-down">
+                    {Number(stock.change_percent).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {losers.length === 0 && (
+              <p className="apple-market-empty">
+                No declining stocks currently.
+              </p>
+            )}
           </div>
-        </div>
-      ))}
 
-    {!stocks.some(s => Number(s.change_percent) < 0) && (
-      <p className="apple-market-empty">
-        No declining stocks currently.
-      </p>
-    )}
-  </div>
+          <div className="apple-market-extremes">
+            <div>
+              <span>Highest Price</span>
+              <strong>{highest?.symbol || "—"}</strong>
+              <small>
+                {highest ? `₹${money(highest.current_price)}` : "No stocks"}
+              </small>
+            </div>
 
-  <div className="apple-market-extremes">
-    <div>
-      <span>Highest Price</span>
-      <strong>
-        {stocks.length
-          ? [...stocks].sort(
-              (a, b) =>
-                Number(b.current_price) -
-                Number(a.current_price)
-            )[0].symbol
-          : "—"}
-      </strong>
-      <small>
-        {stocks.length
-          ? "₹" + money(
-              Math.max(
-                ...stocks.map(s => Number(s.current_price))
-              )
-            )
-          : "No stocks"}
-      </small>
-    </div>
-
-    <div>
-      <span>Lowest Price</span>
-      <strong>
-        {stocks.length
-          ? [...stocks].sort(
-              (a, b) =>
-                Number(a.current_price) -
-                Number(b.current_price)
-            )[0].symbol
-          : "—"}
-      </strong>
-      <small>
-        {stocks.length
-          ? "₹" + money(
-              Math.min(
-                ...stocks.map(s => Number(s.current_price))
-              )
-            )
-          : "No stocks"}
-      </small>
-    </div>
-  </div>
-</section>
+            <div>
+              <span>Lowest Price</span>
+              <strong>{lowest?.symbol || "—"}</strong>
+              <small>
+                {lowest ? `₹${money(lowest.current_price)}` : "No stocks"}
+              </small>
+            </div>
+          </div>
+        </section>
       </div>
 
       <section className="apple-card apple-list" id="apple-company-list">
         <div className="apple-list-heading">
           <div>
-            <div className="apple-section-label">
-              YOUR EXCHANGE
-            </div>
-
+            <div className="apple-section-label">YOUR EXCHANGE</div>
             <h2>Companies</h2>
-
-            <p>
-              Browse and update your listed companies.
-            </p>
+            <p>Browse and update your listed companies.</p>
           </div>
 
           <button
@@ -528,14 +522,11 @@ function AdminDashboard({ token }) {
         <div className="apple-search-row">
           <div className="apple-search-wrap">
             <span>⌕</span>
-
             <input
               type="search"
               placeholder="Search companies..."
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
+              onChange={(event) => setSearch(event.target.value)}
             />
           </div>
 
@@ -558,26 +549,21 @@ function AdminDashboard({ token }) {
 
             <tbody>
               {filteredStocks.map((stock) => {
-                const change = Number(
-                  stock.change_percent || 0
-                );
+                const change = Number(stock.change_percent || 0);
 
                 return (
                   <tr key={stock.stock_id}>
                     <td>
                       <div className="apple-company-cell">
                         <div className="apple-avatar">
-                          {stock.symbol.slice(0, 2)}
+                          {String(stock.symbol || "").slice(0, 2)}
                         </div>
-
                         <strong>{stock.company_name}</strong>
                       </div>
                     </td>
 
                     <td>
-                      <span className="apple-symbol">
-                        {stock.symbol}
-                      </span>
+                      <span className="apple-symbol">{stock.symbol}</span>
                     </td>
 
                     <td className="apple-price">
@@ -616,7 +602,9 @@ function AdminDashboard({ token }) {
             <div className="apple-empty">
               {fetching
                 ? "Loading companies..."
-                : "No companies found."}
+                : stocks.length === 0
+                ? "No companies found. Add your first company above."
+                : "No matching companies found."}
             </div>
           )}
         </div>
@@ -631,4 +619,3 @@ function AdminDashboard({ token }) {
 }
 
 export default AdminDashboard;
-
