@@ -35,35 +35,37 @@ function AdminDashboard({ token }) {
     [token]
   );
 
+  // Public API: load companies without requiring a token.
   const loadStocks = useCallback(async () => {
     setFetching(true);
 
     try {
-      const response = await axios.get(API, authConfig);
-      setStocks(response.data.stocks || []);
+      const response = await axios.get(API);
+      const companyList = response.data?.stocks;
+
+      if (!Array.isArray(companyList)) {
+        throw new Error("Invalid stocks response from server");
+      }
+
+      setStocks(companyList);
       setNotice(null);
     } catch (error) {
-      console.error(
-        "Load stocks error:",
-        error.response?.data || error.message
-      );
+      console.error("Load stocks error:", error);
 
       setNotice({
         type: "error",
         text:
           error.response?.data?.message ||
-          "Unable to load companies. Check your backend."
+          "Unable to load companies. Please try again."
       });
     } finally {
       setFetching(false);
     }
-  }, [authConfig]);
+  }, []);
 
   useEffect(() => {
-    if (token) {
-      loadStocks();
-    }
-  }, [token, loadStocks]);
+    loadStocks();
+  }, [loadStocks]);
 
   const stats = useMemo(() => {
     const rising = stocks.filter(
@@ -76,8 +78,7 @@ function AdminDashboard({ token }) {
 
     const average = stocks.length
       ? stocks.reduce(
-          (sum, stock) =>
-            sum + Number(stock.current_price || 0),
+          (sum, stock) => sum + Number(stock.current_price || 0),
           0
         ) / stocks.length
       : 0;
@@ -126,6 +127,14 @@ function AdminDashboard({ token }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!token) {
+      setNotice({
+        type: "error",
+        text: "Please log in again to manage companies."
+      });
+      return;
+    }
 
     const symbol = form.symbol.trim().toUpperCase();
     const name = form.company_name.trim();
@@ -195,16 +204,13 @@ function AdminDashboard({ token }) {
       resetForm();
       await loadStocks();
     } catch (error) {
-      console.error(
-        "Save company error:",
-        error.response?.data || error.message
-      );
+      console.error("Save company error:", error);
 
       setNotice({
         type: "error",
         text:
           error.response?.data?.message ||
-          "Unable to save company. Check your backend routes."
+          "Unable to save company. Please check your admin access."
       });
     } finally {
       setLoading(false);
@@ -249,7 +255,6 @@ function AdminDashboard({ token }) {
             <span className="apple-status-dot" />
             DALALX ADMINISTRATION
           </div>
-
           <h1>Overview</h1>
           <p>Everything you need to manage your virtual market.</p>
         </div>
@@ -298,11 +303,9 @@ function AdminDashboard({ token }) {
               <div className="apple-section-label">
                 COMPANY MANAGEMENT
               </div>
-
               <h2>
                 {editingId !== null ? "Edit company" : "Add a company"}
               </h2>
-
               <p>
                 {editingId !== null
                   ? "Make changes to an existing listing."
